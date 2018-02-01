@@ -12,16 +12,28 @@ __Auteur__ : Eymard Houdeville<br>
 4. [Moteur de recherche vectoriel](#vect)
 5. [Mesures de performance et de pertinence](#perf)
 
+Pour lancer le projet il suffit de cloner ce repository est de lancer séparemment les fonctions main selon l'action que l'on souhaite lancer.
+
 ## <a name="description"></a>1. Description
 
 Le projet a pour objectif de construire un index inversé sur deux corpus de textes:
 - CACM
 - CS276
+
 Cet index inversé doit ensuite être utilisé pour implémenter différents types de modèles de recherche vus en cours:
 - Des variantes du modèle vectoriel
 - Le modèle booléen
 
+L'ensemble des consignes du projet est disponible dans le document pdf "Projet_2017_2018".
+
+L'arborescence du projet est la suivante:
+
 - **Projet** Permet de lancer les différentes fonctions Main qui répondent aux différentes parties du projet
+  - **main_CACM.py** : les réponses aux premières questions avec notamment une analyse du vocabulaire, du nombre de tokens ou de la loi de Zipf
+  - **main_cs276.py** : l'analyse du second corpus de Stanford
+  - **main_bool.py** : le script pour lancer le moteur de recherche booléen sur CACM
+  - **main_vect.py** : le script pour lancer le moteur de recherche vectoriel sur CACM
+  - **main_pertinence.py** : le script pour lancer le mesure de la performance du moteur vectoriel
 
 -  **Lib** est le dossier "père" contenant :
     - **boolean_motor.py** Le moteur de recherche booléen
@@ -30,12 +42,14 @@ Cet index inversé doit ensuite être utilisé pour implémenter différents typ
     - **utils_cs276.py** Les fonctions utilisées pour l'indexation du corpus CS 276 de Stanford
     - **utils_pertinence.py** Les fonctions utilisées pour la mesure de la pertinence des résultats des précédents moteurs
 
+
 ## <a name="init"></a>2. Initialisation et analyse des corpus
+
+Nous reproduisons ici les courbes de Zipf que nous affichons en paramètrant la valeur PLOT_GRAPH à True dans nos classes d'analyse des corpus.
 
 ## <a name="bool"></a>3. Moteur de recherche booléen
 
-##### Python
-
+Le moteur de recherche booléen prend des inputs sous la forme normale conjonctive : a|b&c.
 
 ## 4. <a name="vect"></a>Moteur de recherche vectoriel
 
