@@ -12,7 +12,13 @@ __Auteur__ : Eymard Houdeville<br>
 4. [Moteur de recherche vectoriel](#vect)
 5. [Mesures de performance et de pertinence](#perf)
 
-Pour lancer le projet il suffit de cloner ce repository est de lancer séparemment les fonctions main selon l'action que l'on souhaite lancer.
+Pour lancer le projet il suffit de git clone le repo et de lancer l'un des scripts main en ligne de commande:
+
+"""
+python main_CACM.py
+"""
+
+L'ensemble des consignes du projet est disponible dans le document pdf "Projet_2017_2018".
 
 ## <a name="description"></a>1. Description
 
@@ -20,11 +26,11 @@ Le projet a pour objectif de construire un index inversé sur deux corpus de tex
 - CACM
 - CS276
 
+**Hypothèse**: On fait l'hypothèse que les deux corpus tiennent en mémoire.
+
 Cet index inversé doit ensuite être utilisé pour implémenter différents types de modèles de recherche vus en cours:
 - Des variantes du modèle vectoriel
 - Le modèle booléen
-
-L'ensemble des consignes du projet est disponible dans le document pdf "Projet_2017_2018".
 
 L'arborescence du projet est la suivante:
 
@@ -52,6 +58,10 @@ Nous reproduisons ici les courbes de Zipf que nous affichons en paramètrant la 
 Le moteur de recherche booléen prend des inputs sous la forme normale conjonctive : a|b&c.
 
 ## 4. <a name="vect"></a>Moteur de recherche vectoriel
+
+Le moteur de recherche vectoriel utilise la mesure de similarité cosinus entre la requête et les documents.
+
+## 4. <a name="pert"></a>Mesure de la performance et de la pertinence
 
 Les valeurs suivantes ne sont pas présentes dans le fichier qrel.text pour juger de la pertinence de nos requêtes:
 34,35,41,46,47,50,51,52,53,54,55,56. Dans ce cas là on indique que les fichiers pertinents pour cette requêtes étaient l'ensemble vide [].
