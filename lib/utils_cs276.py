@@ -4,26 +4,26 @@ from nltk.tokenize import sent_tokenize, word_tokenize
 
 class corpus_cs276:
 
-    def __init__(self):
-        self.content_parsed,self.dic_docs,self.dic_termes = self.traitement_corpus() #C'est un grand tableau de tuples (term_id,doc_id)
+    def __init__(self,percentage_to_read):
+        self.percentage_to_read=percentage_to_read
+        self.tokens,self.dic_docs,self.dic_termes = self.traitement_corpus() #C'est un grand tableau de tuples (term_id,doc_id)
         self.length_tokens = len(self.tokens)
-        self.vocabulary = collections.Counter(x[0] for x in self.token)
+        self.vocabulary = collections.Counter(x[0] for x in self.tokens)
         self.length_voc = len(self.vocabulary)
-        self.index_inverse = map_reduce_index()
 
     def traitement_corpus(self):
         """
         Cette fonction renvoie:
         - une liste de tuples (word_id,doc_id)
-        - Le dictionnaire matchant word à word_id
-        - Le dictonnaire matchant doc à doc_id
+        - Le dictionnaire matchant word a word_id
+        - Le dictonnaire matchant doc a doc_id
         """
         j=0
         k=0
         content_parsed = []
         dic_docs={}
         dic_termes={}
-        for i in range (0,10):
+        for i in range (0,1*self.percentage_to_read):
             for file_name in os.listdir('data/cs276/'+str(i)):
                 with open('data/cs276/'+str(i)+'/'+file_name,'r') as f:
                     doc_id = j
@@ -41,7 +41,7 @@ class corpus_cs276:
 
     def map_reduce_index(self):
         """
-        On commence par regrouper les tokens dans les clusters suivants par ordre alphabétique:
+        On commence par regrouper les tokens dans les clusters suivants par ordre alphabetique:
         Cluster 1: A-E
         Cluster 2: F-J
         Cluster 3: K-0
@@ -54,41 +54,37 @@ class corpus_cs276:
         cluster_4=["p","q","r","s","t"]
         cluster_5=["u","v","w","x","y","z"]
         # Creation des clusters
-        for w in self.token:
-            if w[0][0] in cluster_1:
+        for w in self.tokens:
+            if w[0] in cluster_1:
                 c = "cluster_1"
-            elif w[0][0] in cluster_2:
+            elif w[0] in cluster_2:
                 c="cluster_2"
-            elif w[0][0] in cluster_3:
+            elif w[0] in cluster_3:
                 c="cluster_3"
-            elif w[0][0] in cluster_4:
+            elif w[0] in cluster_4:
                 c="cluster_4"
-            elif w[0][0] in cluster_5:
+            elif w[0] in cluster_5:
                 c="cluster_5"
             partition[c].append(w)
 
-        # On créé les indexs inversés pour chaque noeud de la partition (Faire 5 threads)
         index_inv={}
         for part in partition:
             for word in partition[part]:
                 index_inv[part] ={}
-                if word[0] not in index_inv_1:
+                if word[0] not in index_inv[part]:
                     # L'index a la forme: mot_id= (doc_id,counter)
                     index_inv[part][word[0]]=(word[1],1)
                 else:
-                    #On incrémente le compter si le mot a déjà été vu
+                    #On incremente le compter si le mot a deja ete vu
                     index_inv[part][word[0]][1]=index_inv[part][word[0]][1]+1
-
 
         for elem in index_inv["cluster_1"]:
             if elem in index_inv["cluster_2"]:
                 index_inv["cluster2"][elem]=(index_inv["cluster_2"][elem][0],index_inv["cluster_1"][elem][1]+index_inv["cluster_2"][elem][1])
                 index_inv["cluster_1"].remove(elem)
-        # Et on ajoute à l'index total tout le reste de l'index 2 qui n'est pas déjà dans index_inv_1
+        # Et on ajoute a l'index total tout le reste de l'index 2 qui n'est pas deja dans index_inv_1
 
-        # Làil faut penser à ajouter une opération de fusion !! (genre les mots qui sont dans les deux)
         index_inv["cluster_2"]=index_inv["cluster_2"]+index_inv["cluster_1"]
-
 
         for elem in index_inv["cluster_2"]:
             if elem in index_inv["cluster_3"]:
@@ -109,4 +105,5 @@ class corpus_cs276:
         index_inv["cluster_5"]=index_inv["cluster_5"]+index_inv["cluster_4"]
 
         index_inv_final = index_inv["cluster_5"]
+        print(index_inv_final)
         return index_inv_final

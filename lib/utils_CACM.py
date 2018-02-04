@@ -1,11 +1,12 @@
 
 import re, math,collections,nltk
 import matplotlib.pylab as plt
-import pandas,time
+import pandas
 from nltk.corpus import stopwords
 from nltk.tokenize import sent_tokenize, word_tokenize,RegexpTokenizer
 
 class corpus_CACM:
+
     def __init__(self,SHOW_GRAPH):
         self.common_words = self.get_commonwords()
         self.dic_docs,self.tokens,self.dic_termes= self.tokenization()
@@ -20,10 +21,12 @@ class corpus_CACM:
     def tokenization(self):
         #.I, .T, .W et .K.
         """
-        Return a dic with words that have been seen and parsed by article ids
+        Return:
+        - dic_docs : a dic where keys are doc ids and values are titles
+        - tokens: an array whose elements are of the form : (word id,doc_id)
+        - dic_termes: an association word_id / words
         """
         with open('data/CACM/cacm.all','r') as doc:
-            t_time=time.time()
             content = doc.readlines()
             content = [x.strip() for x in content]
             self.dic_docs={}
@@ -56,64 +59,62 @@ class corpus_CACM:
                                 j=j+1
                         j=j+1
                 i=i+j
-        e_time = time.time()
-        print("TOKENIZATION " + str(e_time-t_time))
         self.t_id_term()
         return self.dic_docs,self.tokens,self.dic_termes
 
     def t_id_term(self):
+        """
+        Words id with the terms they represent
+        """
         self.t_id_term={}
         for key in self.dic_termes:
             self.t_id_term[self.dic_termes[key]]=key
         return self.t_id_term
 
     def get_vocabulary(self,tokens):
-        g_time=time.time()
+        """
+        Clean tokens to return the vocabulary
+
+        """
         already_seen=[]
         vocabulary=[]
         for token in tokens:
             if token[0] not in already_seen and self.t_id_term[token[0]] not in self.common_words and self.t_id_term[token[0]] not in stopwords.words('english'):
                 vocabulary.append(token)
                 already_seen.append(token[0])
-        k_time=time.time()
-        print("VOCA " + str(k_time-g_time))
         return vocabulary
 
     def create_index(self):
-        l_time=time.time()
+        # return an index: doc_id associated with all terms
         self.index={}
         for k in self.tokens:
             if k[1] not in self.index:
                 self.index[k[1]]=[]
             self.index[k[1]].append(k[0])
-        v_time=time.time()
-        print("INDEX " + str(v_time-l_time))
         return self.index
 
     def create_index_inv(self):
-        l_time=time.time()
         self.index_inv={}
         for k in self.tokens:
+
             if k[0] not in self.index_inv:
                 self.index_inv[k[0]]=[]
-            self.index_inv[k[0]].append(k[1])
-        v_time=time.time()
-        print("INDEX INV " + str(v_time-l_time))
+            if k[1] not in self.index_inv[k[0]]:
+                self.index_inv[k[0]].append(k[1])
         return self.index_inv
 
     def zipf_verification(self):
-        tokens = self.tokens
-        for word in tokens:
-            if self.dic_termes.keys()[self.dic_termes.values().index(word)] in self.common_words:
-                 tokens.remove(word)
-        count_zipf = nltk.FreqDist(self.tokens).most_common()
+        tokens=[]
+        for word in self.tokens:
+            if self.t_id_term[word[0]] not in self.common_words:
+                 tokens.append(word)
+        count_zipf = nltk.FreqDist(tokens).most_common()
         count_zipf.sort(key=lambda t: t[1], reverse=True)
         ranks=[]
         freq=[]
         for r, f in enumerate(count_zipf):
             ranks.append(r)
             freq.append(f[1])
-        #count_zipf_df=count_zipf_df.set_index('rank')
         if self.SHOW_GRAPHS:
             plt.figure(1)
             plt.subplot(211)

@@ -103,8 +103,8 @@ def get_f_e_measures(precision,rappel,dic_docs,q_res):
     for q in q_res:
         for seuil in range(1,len(dic_docs)+1):
             if precision[q][seuil]!=0 or rappel[q][seuil]!=0:
-                e_measures[q][seuil] = 1 - 2 * precision[q][seuil] * rappel[q][seuil] / (precision[q][seuil] + rappel[q][seuil])
-                f_measures[q][seuil] = 2 * precision[q][seuil] * rappel[q][seuil] / (precision[q][seuil] + rappel[q][seuil])
+                e_measures[q][seuil] = 1 - 2 * (precision[q][seuil] * rappel[q][seuil] / (precision[q][seuil] + rappel[q][seuil]))
+                f_measures[q][seuil] = 2 * (precision[q][seuil] * rappel[q][seuil] / (precision[q][seuil] + rappel[q][seuil]))
             else:
                 e_measures[q][seuil]=0
                 f_measures[q][seuil]=0

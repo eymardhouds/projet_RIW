@@ -19,8 +19,9 @@ tokenizer = RegexpTokenizer(r'\w+')
 
 do_research=1
 while do_research!=0:
-    method = input("Quelle methode souhaitez-vous utiliser pour la recherche vectorielle ? (tf_idf)")
+    method = input("Quelle methode souhaitez-vous utiliser pour la recherche vectorielle ? (tf_idf,ntf_idf,maxfreq)")
     query = input("Que cherchez-vous ? (une liste de mots)")
+
     query=tokenizer.tokenize(query)
 
     result,timer = moteur_vect(method,query,A.t_id_term,A.index,A.dic_termes,A.dic_docs,A.index_inv,A.tokens,10)
@@ -28,4 +29,4 @@ while do_research!=0:
     print("\n \n ############ TOP 10 RELEVANT WORK FOUND IN CACM in %0.01f sec ###################### \n" % timer)
     for doc_id in [t[0] for t in result]:
         print(A.dic_docs[doc_id])
-    print("Vous pouvez effectuer une nouvelle recherche\n\n###############################\n\n")
+    print("\n\nVous pouvez effectuer une nouvelle recherche\n\n###############################\n\n")
