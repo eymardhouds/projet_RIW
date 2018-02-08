@@ -1,6 +1,8 @@
 # Stanford: Tokens: 25 000 000 et taukke 400 000
 import re,math, os, collections,sys,time
 from nltk.tokenize import sent_tokenize, word_tokenize
+from multiprocessing import Manager, Pool
+
 
 class corpus_cs276:
 
@@ -39,71 +41,68 @@ class corpus_cs276:
                         content_parsed.append((w_id,doc_id))
         return content_parsed,dic_docs,dic_termes
 
+
+    def map(self,partition):
+        """
+        Fonction map qui ajoute a un dictionnaire dont les clefs sont les mots des elements du type (Doc_id,1)
+
+        """
+        map_index={}
+        for word in partition:
+            if word[0] not in map_index:
+                map_index[word[0]]=[]
+            map_index[word[0]].append((word[1],1))
+        return map_index
+
+
+    def reduce(self,partition,index_inv_final):
+        """
+        La fonction reduce renvoie un dictionnaire dont les clefs sont les mots.
+        Les valeurs sont elles memes des dictonnaires dont les clefs sont les doc_id et les valeurs le nombre d'apparition
+        """
+        for word in partition:
+            if word not in index_inv_final:
+                index_inv_final[word]={}
+            for elem in partition[word]:
+                doc_id=elem[0]
+                cnt = elem[1]
+                if doc_id in index_inv_final[word]:
+                    index_inv_final[word][doc_id]=index_inv_final[word][doc_id]+cnt
+                else:
+                    index_inv_final[word][doc_id]=cnt
+        return index_inv_final
+
+    def shuffle(self):
+        """
+        Create three different clusters of tokens
+        """
+        partition={}
+        partition[1]=[]
+        partition[2]=[]
+        partition[3]=[]
+        for w in self.tokens:
+            if w[0]%3==0:
+                partition[1].append(w)
+            elif w[0]%3==1:
+                partition[2].append(w)
+            elif w[0]%3==2:
+                partition[3].append(w)
+
+
+        return partition
+
+
     def map_reduce_index(self):
         """
         On commence par regrouper les tokens dans les clusters suivants par ordre alphabetique:
-        Cluster 1: A-E
-        Cluster 2: F-J
-        Cluster 3: K-0
-        Cluster 4: P-T
-        Cluster: W-Z
         """
-        cluster_1=["a","b","c","d","e"]
-        cluster_2=["f","g","h","i","j"]
-        cluster_3=["k","l","m","n","o"]
-        cluster_4=["p","q","r","s","t"]
-        cluster_5=["u","v","w","x","y","z"]
-        # Creation des clusters
-        for w in self.tokens:
-            if w[0] in cluster_1:
-                c = "cluster_1"
-            elif w[0] in cluster_2:
-                c="cluster_2"
-            elif w[0] in cluster_3:
-                c="cluster_3"
-            elif w[0] in cluster_4:
-                c="cluster_4"
-            elif w[0] in cluster_5:
-                c="cluster_5"
-            partition[c].append(w)
-
         index_inv={}
+        partition=self.shuffle()
+        # On applique la fonction map sur chacun des clusters
         for part in partition:
-            for word in partition[part]:
-                index_inv[part] ={}
-                if word[0] not in index_inv[part]:
-                    # L'index a la forme: mot_id= (doc_id,counter)
-                    index_inv[part][word[0]]=(word[1],1)
-                else:
-                    #On incremente le compter si le mot a deja ete vu
-                    index_inv[part][word[0]][1]=index_inv[part][word[0]][1]+1
-
-        for elem in index_inv["cluster_1"]:
-            if elem in index_inv["cluster_2"]:
-                index_inv["cluster2"][elem]=(index_inv["cluster_2"][elem][0],index_inv["cluster_1"][elem][1]+index_inv["cluster_2"][elem][1])
-                index_inv["cluster_1"].remove(elem)
-        # Et on ajoute a l'index total tout le reste de l'index 2 qui n'est pas deja dans index_inv_1
-
-        index_inv["cluster_2"]=index_inv["cluster_2"]+index_inv["cluster_1"]
-
-        for elem in index_inv["cluster_2"]:
-            if elem in index_inv["cluster_3"]:
-                index_inv["cluster_3"][elem]=(index_inv["cluster_3"][elem][0],index_inv["cluster_2"][elem][1]+index_inv["cluster_3"][elem][1])
-                index_inv["cluster_2"].remove(elem)
-        index_inv["cluster_3"]=index_inv["cluster_3"]+index_inv["cluster_2"]
-
-        for elem in index_inv["cluster_3"]:
-            if elem in index_inv["cluster_4"]:
-                index_inv["cluster_4"][elem]=(index_inv["cluster_4"][elem][0],index_inv["cluster_3"][elem][1]+index_inv["cluster_4"][elem][1])
-                index_inv["cluster_3"].remove(elem)
-        index_inv["cluster_4"]=index_inv["cluster_4"]+index_inv["cluster_3"]
-
-        for elem in index_inv["cluster_4"]:
-            if elem in index_inv["cluster_5"]:
-                index_inv["cluster_5"][elem]=(index_inv["cluster_5"][elem][0],index_inv["cluster_4"][elem][1]+index_inv["cluster_5"][elem][1])
-                index_inv["cluster_4"].remove(elem)
-        index_inv["cluster_5"]=index_inv["cluster_5"]+index_inv["cluster_4"]
-
-        index_inv_final = index_inv["cluster_5"]
-        print(index_inv_final)
+            index_inv[part]=self.map(partition[part])
+        # On applique la fonction reduce aux clusters et on fait grossir notre index inverse finale
+        index_inv_final={}
+        for part in index_inv:
+            index_inv_final=self.reduce(index_inv[part],index_inv_final)
         return index_inv_final

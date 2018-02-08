@@ -72,7 +72,6 @@ def moteur_vect(method,query,t_id_term,index,dic_termes,dic_docs,index_inv,token
     elif method="maxfreq":
         # ICI MODIFIER
 
-
     # Retun a dic : {(word,doc_id) : n times} to say that a word occured n times in doc_id
     tokens_count_by_doc_id = collections.Counter(tokens)
 

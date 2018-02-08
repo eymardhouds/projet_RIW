@@ -56,7 +56,6 @@ def get_commonwords():
 def get_rappel_and_precision(results,q_res,dic_docs):
     rappel={}
     precision={}
-
     #Initialisation
     for i in q_res:
         rappel[i]={}
@@ -69,8 +68,6 @@ def get_rappel_and_precision(results,q_res,dic_docs):
         results[q]=[m[0] for m in results[q]]
         # gestion du seuil
         for seuil in range(1,len(dic_docs)+1):
-            #print("Dealing with " + str(q) + " - " + str(seuil))
-            #print(str(q)+" /3 docs and "+str(seuil)+ " /10 seuils")
             results_tmp=results[q][:seuil]
             for elem_found in results_tmp:
                 if elem_found in q_res[q]:
