@@ -60,31 +60,29 @@ def get_rappel_and_precision(results,q_res,dic_docs):
     for i in q_res:
         rappel[i]={}
         precision[i]={}
-        for j in range(1,len(dic_docs)+1):
+        for j in range(1,10):
             rappel[i][j]=0
             precision[i][j]=0
 
+    # Calcul du rappel et de la precision pour chacune des requetes
     for q in q_res:
-        results[q]=[m[0] for m in results[q]]
         # gestion du seuil
-        for seuil in range(1,len(dic_docs)+1):
+        for seuil in range(1,10):
+            # On tronque les resultats au seuil que l'on souhaite observer
             results_tmp=results[q][:seuil]
+
             for elem_found in results_tmp:
                 if elem_found in q_res[q]:
                     rappel[q][seuil]=rappel[q][seuil]+1
             for elem_pertin in q_res[q]:
                 if elem_pertin in results_tmp:
                     precision[q][seuil]=precision[q][seuil]+1
-
             # Normalisation
             if len(q_res[q])!=0:
                 rappel[q][seuil]=float(rappel[q][seuil])/float(len(q_res[q]))
             else:
                 rappel[q][seuil]=0
             precision[q][seuil]=float(precision[q][seuil])/float(seuil)
-            if precision[q][seuil]>1 or rappel[q][seuil]>1:
-                print(precision[q][seuil])
-                print(rappel[q][seuil])
 
     return precision,rappel
 
@@ -94,11 +92,11 @@ def get_f_e_measures(precision,rappel,dic_docs,q_res):
     for i in q_res:
         e_measures[i]={}
         f_measures[i]={}
-        for j in range(1,len(dic_docs)+1):
+        for j in range(1,10):
             e_measures[i][j]=0
             f_measures[i][j]=0
     for q in q_res:
-        for seuil in range(1,len(dic_docs)+1):
+        for seuil in range(1,10):
             if precision[q][seuil]!=0 or rappel[q][seuil]!=0:
                 e_measures[q][seuil] = 1 - 2 * (precision[q][seuil] * rappel[q][seuil] / (precision[q][seuil] + rappel[q][seuil]))
                 f_measures[q][seuil] = 2 * (precision[q][seuil] * rappel[q][seuil] / (precision[q][seuil] + rappel[q][seuil]))
@@ -111,10 +109,10 @@ def plot_precision_rappel(precision,rappel,dic_docs,q_res):
     avg_precision={}
     avg_rappel={}
     len_q=len(q_res)
-    for i in range(1,len(dic_docs)+1):
+    for i in range(1,10):
         avg_precision[i]=0
         avg_rappel[i]=0
-    for seuil in range(1,len(dic_docs)+1):
+    for seuil in range(1,10):
         for q in q_res:
             avg_precision[seuil] = precision[q][seuil]+avg_precision[seuil]
             avg_rappel[seuil]= rappel[q][seuil]+avg_rappel[seuil]

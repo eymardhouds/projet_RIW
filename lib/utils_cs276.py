@@ -6,8 +6,8 @@ from multiprocessing import Manager, Pool
 
 class corpus_cs276:
 
-    def __init__(self,percentage_to_read):
-        self.percentage_to_read=percentage_to_read
+    def __init__(self,nbr_of_folders):
+        self.nbr_of_folders=nbr_of_folders
         self.tokens,self.dic_docs,self.dic_termes = self.traitement_corpus() #C'est un grand tableau de tuples (term_id,doc_id)
         self.length_tokens = len(self.tokens)
         self.vocabulary = collections.Counter(x[0] for x in self.tokens)
@@ -25,7 +25,7 @@ class corpus_cs276:
         content_parsed = []
         dic_docs={}
         dic_termes={}
-        for i in range (0,1*self.percentage_to_read):
+        for i in range (0,self.nbr_of_folders):
             for file_name in os.listdir('data/cs276/'+str(i)):
                 with open('data/cs276/'+str(i)+'/'+file_name,'r') as f:
                     doc_id = j
@@ -87,10 +87,7 @@ class corpus_cs276:
                 partition[2].append(w)
             elif w[0]%3==2:
                 partition[3].append(w)
-
-
         return partition
-
 
     def map_reduce_index(self):
         """

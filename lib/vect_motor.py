@@ -12,6 +12,7 @@ def get_tf_df(word_id,doc_id,dic_docs,tokens_count_by_doc_id):
     return tf_idf
 
 def get_tf_df_normalized(word_id,doc_id,dic_docs,tokens_count_by_doc_id):
+    tf=0
     if tokens_count_by_doc_id[(word_id,doc_id)]!=0:
         tf=1+math.log(tokens_count_by_doc_id[(word_id,doc_id)],10)
         idf=math.log(len(dic_docs)/tokens_count_by_doc_id[(word_id,doc_id)],10)
@@ -21,12 +22,12 @@ def get_tf_df_normalized(word_id,doc_id,dic_docs,tokens_count_by_doc_id):
     else:
         n_tf_idf=0
 
-    return n_tf*idf
+    return n_tf_idf
 
 def get_max_freq(term_id,doc_id,dic_docs,tokens_count_by_doc_id,mf):
     max_tf = mf[doc_id]
     mtf=0
-    if tokens_count_by_doc_id[(word_id,doc_id)]!=0:
+    if tokens_count_by_doc_id[(term_id,doc_id)]!=0:
         mtf=mtf+1
     if max_tf==0:
         return 0
@@ -37,11 +38,11 @@ def cos_measure(index,doc_id,query_weights,query_cos_square,tokens_count_by_doc_
     sum_cos=0
 
     for term in index[doc_id]:
-        if method="tf_idf":
-            weight_tid_doc_id = get_tf_id(term,doc_id,dic_docs,tokens_count_by_doc_id)
-        elif method="ntf_idf":
+        if method=="tf_idf":
+            weight_tid_doc_id = get_tf_df(term,doc_id,dic_docs,tokens_count_by_doc_id)
+        elif method=="ntf_idf":
             weight_tid_doc_id = get_tf_df_normalized(term,doc_id,dic_docs,tokens_count_by_doc_id)
-        elif method="maxfreq":
+        elif method=="maxfreq":
             weight_tid_doc_id = get_max_freq(term,doc_id,dic_docs,tokens_count_by_doc_id,mf)
 
         sum_cos = sum_cos + query_weights[term]*weight_tid_doc_id
@@ -60,39 +61,51 @@ def moteur_vect(method,query,t_id_term,index,dic_termes,dic_docs,index_inv,token
     cos_factor=[]
     t_id_doc_id = []
     tokenizer = RegexpTokenizer(r'\w+')
+    for query_component in query:
+        query_component=query_component.lower()
+        if query_component in dic_termes.keys():
+            if dic_termes[query_component] in index_inv.keys():
+                index_inv[dic_termes[query_component]].append(-99)
+            tokens.append((dic_termes[query_component],-99))
+            index[-99]=[]
+            index[-99].append(dic_termes[query_component])
 
-    if method=="tf_idf" or method=="ntf_idf":
-        for query_component in query:
-            query_component=query_component.lower()
-            if query_component in dic_termes.keys():
-                if dic_termes[query_component] in index_inv.keys():
-                    index_inv[dic_termes[query_component]].append(-99)
-                tokens.append((dic_termes[query_component],-99))
-
-    elif method="maxfreq":
-        # ICI MODIFIER
+    if method=="maxfreq":
+        mf = max_freq(index_inv,dic_docs,dic_termes)
+        mf[-99] = 0
+        for t in index[-99]:
+            k=0
+            for d in index_inv[t]:
+                k=k+1
+            if k > mf[-99]:
+                mf[-99]=k
 
     # Retun a dic : {(word,doc_id) : n times} to say that a word occured n times in doc_id
     tokens_count_by_doc_id = collections.Counter(tokens)
-
-    mf = max_freq(index_inv,dic_docs,dic_termes)
-
     # We need to compute info about the query first
     for term_id in t_id_term:
         if method == "tf_idf":
-            query_weights[term_id] = get_tf_idf(term_id,-99,dic_docs,tokens_count_by_doc_id)
-        elif method="ntf_idf":
+            query_weights[term_id] = get_tf_df(term_id,-99,dic_docs,tokens_count_by_doc_id)
+        elif method=="ntf_idf":
             query_weights[term_id] = get_tf_df_normalized(term_id,-99,dic_docs,tokens_count_by_doc_id)
-        elif method="maxfreq":
+        elif method=="maxfreq":
             query_weights[term_id]=get_max_freq(term_id,-99,dic_docs,tokens_count_by_doc_id,mf)
+        else:
+            print("Cette methode n'existe pas ou n'est pas encore implementee")
+            return None
         query_cos_square = query_cos_square+query_weights[term_id]**2
 
     for doc_id in index:
-        cos_factor.append((doc_id,cos_measure(index,doc_id,query_weights,query_cos_square,tokens_count_by_doc_id,dic_docs,method,mf)))
+        if method=="maxfreq":
+            cos_factor.append((doc_id,cos_measure(index,doc_id,query_weights,query_cos_square,tokens_count_by_doc_id,dic_docs,method,mf)))
+        else:
+            cos_factor.append((doc_id,cos_measure(index,doc_id,query_weights,query_cos_square,tokens_count_by_doc_id,dic_docs,method,0)))
 
     end = time.time()
     res = sorted(cos_factor,key=lambda m: m[1],reverse=True)
-    return res[:nbr_ret],end-start
+    res=res[:nbr_ret]
+    res=[i[0] for i in res if i[0]!=-99]
+    return res,end-start
 
 def max_freq(index_inv,dic_docs,dic_termes):
     # Get by doc id the max frequency
@@ -103,7 +116,7 @@ def max_freq(index_inv,dic_docs,dic_termes):
             count=0
             for dbis in index_inv[t]:
                 if dbis==d:
-                count=count+1
+                    count=count+1
                 if max_freq[d]<count:
                     max_freq[d]=count
     return max_freq
