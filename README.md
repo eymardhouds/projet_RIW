@@ -25,6 +25,7 @@ L'ensemble des consignes du projet est disponible dans le document pdf "Projet_2
 Le projet a pour objectif de construire un index inversé sur deux corpus de textes:
 - CACM
 - CS276
+Ainsi que différents algorithmes de recherche et d'évaluer leur pertinence.
 
 **Hypothèse**: On fait l'hypothèse que les deux corpus tiennent en mémoire.
 
